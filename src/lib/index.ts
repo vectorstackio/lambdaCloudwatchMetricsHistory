@@ -172,6 +172,7 @@ const buildHistory = (
 ) => {
   const output = hosts.map(host => ({
     instanceId: host.instanceId,
+    instanceType: host.instanceType,
     name: host.name,
     host: host.host,
     cpu: [] as HistoryPoint[],
