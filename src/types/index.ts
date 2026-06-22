@@ -20,3 +20,8 @@ export type InstanceInfo = {
   name: string
   instanceType: string
 }
+
+export type TimeRange = {
+  startTime: Date
+  period: number
+}

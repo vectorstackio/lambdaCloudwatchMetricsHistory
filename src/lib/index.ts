@@ -12,7 +12,7 @@ import {
   MetricDataResult
 } from '@aws-sdk/client-cloudwatch'
 
-import type { InstanceInfo, HistoryPoint } from './../types'
+import type { InstanceInfo, HistoryPoint, TimeRange } from './../types'
 
 const ec2 = new EC2Client({})
 const cloudwatch = new CloudWatchClient({})
@@ -59,11 +59,9 @@ export const getRunningInstances = async (): Promise<InstanceInfo[]> => {
 }
 
 export const fetchHistory = async (
-  hosts: Array<
-    InstanceInfo & {
-      host: string
-    }
-  >
+  hosts: Array<InstanceInfo & {host: string}>,
+  startTime: Date,
+  period: number
 ) => {
   const queries: MetricDataQuery[] = []
 
@@ -87,7 +85,7 @@ export const fetchHistory = async (
             }
           ]
         },
-        Period: 3600,
+        Period: period,
         Stat: 'Average'
       }
     })
@@ -105,7 +103,7 @@ export const fetchHistory = async (
             }
           ]
         },
-        Period: 3600,
+        Period: period,
         Stat: 'Average'
       }
     })
@@ -135,7 +133,7 @@ export const fetchHistory = async (
             }
           ]
         },
-        Period: 3600,
+        Period: period,
         Stat: 'Average'
       }
     })
@@ -143,13 +141,19 @@ export const fetchHistory = async (
 
   const response = await cloudwatch.send(
     new GetMetricDataCommand({
-      StartTime: new Date(
-        Date.now() - 24 * 60 * 60 * 1000
-      ),
+      StartTime: startTime,
       EndTime: new Date(),
       ScanBy: 'TimestampAscending',
       MetricDataQueries: queries
     })
+    // new GetMetricDataCommand({
+    //   StartTime: new Date(
+    //     Date.now() - 24 * 60 * 60 * 1000
+    //   ),
+    //   EndTime: new Date(),
+    //   ScanBy: 'TimestampAscending',
+    //   MetricDataQueries: queries
+    // })
   )
 
   return buildHistory(
@@ -221,4 +225,40 @@ const buildHistory = (
   }
 
   return output
+}
+
+export const getTimeRange = (range: string): TimeRange => {
+  const now = Date.now()
+
+  switch (range) {
+  case '1h':
+    return {
+      startTime: new Date(now - 60 * 60 * 1000),
+      period: 60
+    }
+
+  case '24h':
+    return {
+      startTime: new Date(now - 24 * 60 * 60 * 1000),
+      period: 300
+    }
+
+  case '7d':
+    return {
+      startTime: new Date(now - 7 * 24 * 60 * 60 * 1000),
+      period: 3600
+    }
+
+  case '30d':
+    return {
+      startTime: new Date(now - 30 * 24 * 60 * 60 * 1000),
+      period: 3600
+    }
+
+  default:
+    return {
+      startTime: new Date(now - 24 * 60 * 60 * 1000),
+      period: 300
+    }
+  }
 }

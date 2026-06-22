@@ -1,9 +1,15 @@
 // handler.ts
 
-import { getRunningInstances, fetchHistory } from './lib'
+import type {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult
+} from 'aws-lambda'
 
-export const handler = async () => {
+import { getRunningInstances, fetchHistory, getTimeRange } from './lib'
+
+export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
+    const range = event.queryStringParameters?.range ?? '24h'
     const instances = await getRunningInstances()
 
     const hosts = instances.map(instance => ({
@@ -11,7 +17,8 @@ export const handler = async () => {
       host: `ip-${instance.privateIp.replace(/\./g, '-')}`
     }))
 
-    const history = await fetchHistory(hosts)
+    const { startTime, period } = getTimeRange(range)
+    const history = await fetchHistory(hosts, startTime, period)
 
     return {
       statusCode: 200,
@@ -21,7 +28,7 @@ export const handler = async () => {
       },
       body: JSON.stringify({
         generatedAt: new Date().toISOString(),
-        period: '24h',
+        period: range,
         instances: history
       })
     }
