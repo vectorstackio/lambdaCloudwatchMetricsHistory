@@ -1,10 +1,6 @@
 // handler.ts
 
-import type {
-  APIGatewayProxyEvent,
-  APIGatewayProxyResult
-} from 'aws-lambda'
-
+import type { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
 import { getRunningInstances, fetchHistory, getTimeRange } from './lib'
 
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -38,7 +34,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Failed to fetch history'
+        error: 'Internal server error in cloudwatchMetricsHistory Lambda'
       })
     }
   }
