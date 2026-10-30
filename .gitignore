@@ -52,3 +52,4 @@ package-lock.json
 response.json
 out
 .vscode
+coverage

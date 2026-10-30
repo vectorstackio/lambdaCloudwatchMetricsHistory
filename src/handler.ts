@@ -28,8 +28,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         instances: history
       })
     }
-  } catch (error) {
-    console.error(error)
+  } catch {
+    console.error('cloudwatchMetricsHistory request failed')
 
     return {
       statusCode: 500,
